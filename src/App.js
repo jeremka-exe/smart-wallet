@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, CreditCard, ShoppingBag, QrCode, User, TrendingUp, Building2, Wallet, ArrowUpRight, ArrowDownLeft, Bell, Settings, ChevronRight, Smartphone, Wifi, Zap, FileText, PiggyBank, Percent, LineChart, Eye, EyeOff, Copy, Check, X, Camera, Lock, Fingerprint, ArrowLeft, Search, Filter, Download, Share2, MessageSquare, Phone, Mail, MapPin, Calendar, Clock, Star, Award, Target, TrendingDown, Plus, Minus, RefreshCw, Send, DollarSign, Globe, Shield, AlertCircle, CheckCircle, Info, ShoppingCart, Package, Tag, Gift, Headphones, Cpu } from 'lucide-react';
+import { Home, CreditCard, ShoppingBag, QrCode, User, TrendingUp, Building2, Wallet, ArrowUpRight, ArrowDownLeft, Bell, Settings, ChevronRight, Smartphone, Wifi, Zap, FileText, PiggyBank, Percent, LineChart, Eye, EyeOff, Copy, Check, X, Camera, Lock, Fingerprint, ArrowLeft, Search, Filter, Download, Share2, MessageSquare, Phone, Mail, MapPin, Calendar, Clock, Star, Award, Target, TrendingDown, Plus, Minus, RefreshCw, Send, DollarSign, Globe, Shield, AlertCircle, CheckCircle, Info, ShoppingCart, Package, Tag, Gift, Headphones, Cpu, Menu } from 'lucide-react';
 
 const SapphireSuperApp = () => {
   const [currentScreen, setCurrentScreen] = useState('splash');
@@ -24,6 +24,8 @@ const SapphireSuperApp = () => {
   const [cashbackBalance, setCashbackBalance] = useState(1245);
   const [cartItems, setCartItems] = useState([]);
   const [aiAdvice, setAiAdvice] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   
   // Рефы для инпутов
   const phoneInputRef = useRef(null);
@@ -31,6 +33,18 @@ const SapphireSuperApp = () => {
   const iinInputRef = useRef(null);
 
   const isDark = theme === 'dark';
+
+  // Определение размера экрана
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   // Premium цветовая палитра
   const colors = {
@@ -154,7 +168,7 @@ const SapphireSuperApp = () => {
 
   // ==================== КОМПОНЕНТЫ ====================
 
-  const Button = ({ children, onClick, variant = 'primary', fullWidth, disabled, icon: Icon, size = 'md' }) => {
+  const Button = ({ children, onClick, variant = 'primary', fullWidth, disabled, icon: Icon, size = 'md', className = '' }) => {
     const variants = {
       primary: `bg-gradient-to-r ${isDark ? 'from-[#5F4FD1]' : 'from-[#6C5CE7]'} to-[#A29BFE] text-white`,
       secondary: `bg-[${colors.card}] border border-[${colors.border}] text-[${colors.text}]`,
@@ -180,6 +194,7 @@ const SapphireSuperApp = () => {
           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
           flex items-center justify-center gap-2
           shadow-lg hover:shadow-xl
+          ${className}
         `}
         style={{
           backgroundColor: variant === 'primary' ? colors.primary : 
@@ -190,17 +205,16 @@ const SapphireSuperApp = () => {
                 variant === 'ghost' ? colors.primary : undefined
         }}
       >
-        {Icon && <Icon size={20} />}
+        {Icon && <Icon size={size === 'sm' ? 16 : 20} />}
         {children}
       </button>
     );
   };
 
-  const Input = ({ label, value, onChange, type = 'text', placeholder, icon: Icon, error, inputRef, autoFocus }) => {
+  const Input = ({ label, value, onChange, type = 'text', placeholder, icon: Icon, error, inputRef, autoFocus, className = '' }) => {
     const handleChange = (e) => {
       const newValue = e.target.value;
       
-      // Форматирование телефона
       if (label && label.includes('телефон')) {
         let phoneDigits = newValue.replace(/\D/g, '');
         if (phoneDigits.length > 11) phoneDigits = phoneDigits.slice(0, 11);
@@ -223,24 +237,21 @@ const SapphireSuperApp = () => {
         }
         onChange(formattedPhone);
       }
-      // Форматирование ИИН
       else if (label && label.includes('ИИН')) {
         const numericValue = newValue.replace(/\D/g, '').slice(0, 12);
         onChange(numericValue);
       }
-      // Форматирование SMS кода
       else if (label && label.includes('SMS')) {
         const numericValue = newValue.replace(/\D/g, '').slice(0, 4);
         onChange(numericValue);
       }
-      // Остальные поля
       else {
         onChange(newValue);
       }
     };
 
     return (
-      <div className="space-y-2">
+      <div className={`space-y-2 ${className}`}>
         {label && <label className="text-sm font-medium" style={{ color: colors.text }}>{label}</label>}
         <div className="relative">
           {Icon && (
@@ -270,10 +281,10 @@ const SapphireSuperApp = () => {
     );
   };
 
-  const Card = ({ children, onClick, className = '', noPadding }) => (
+  const Card = ({ children, onClick, className = '', noPadding, hover = true }) => (
     <div
       onClick={onClick}
-      className={`rounded-3xl transition-all duration-300 ${onClick ? 'cursor-pointer hover:scale-[1.02]' : ''} ${className}`}
+      className={`rounded-3xl transition-all duration-300 ${onClick && hover ? 'cursor-pointer hover:scale-[1.02] hover:shadow-xl' : ''} ${className}`}
       style={{
         backgroundColor: colors.card,
         border: `1px solid ${colors.border}`,
@@ -282,6 +293,132 @@ const SapphireSuperApp = () => {
       }}
     >
       {children}
+    </div>
+  );
+
+  // Сайдбар для десктопа
+  const DesktopSidebar = () => (
+    <div 
+      className={`hidden md:flex flex-col w-64 lg:w-72 h-screen fixed left-0 top-0 border-r ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      style={{
+        backgroundColor: colors.card,
+        borderColor: colors.border
+      }}
+    >
+      {/* Логотип */}
+      <div className="p-6 border-b" style={{ borderColor: colors.border }}>
+        <div className="flex items-center gap-3">
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white text-2xl"
+            style={{ background: `linear-gradient(135deg, ${colors.primary}, #A29BFE)` }}
+          >
+            S
+          </div>
+          <div>
+            <div className="text-xl font-bold" style={{ color: colors.text }}>Sapphire</div>
+            <div className="text-xs" style={{ color: colors.textSecondary }}>SuperApp</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Профиль */}
+      {userData && (
+        <div className="p-6 border-b" style={{ borderColor: colors.border }}>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-lg font-bold text-white">
+              {userData.name[0]}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold truncate" style={{ color: colors.text }}>{userData.name}</div>
+              <div className="text-xs truncate" style={{ color: colors.textSecondary }}>{userData.phone}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Баланс */}
+      <div className="p-6 border-b" style={{ borderColor: colors.border }}>
+        <div className="space-y-2">
+          <div className="text-sm" style={{ color: colors.textSecondary }}>Общий баланс</div>
+          <div className="text-2xl font-bold flex items-center gap-2" style={{ color: colors.text }}>
+            {showBalance ? `${mockUserData.cards.reduce((sum, card) => sum + card.balance, 0).toLocaleString()} ₸` : '••• •••'}
+            <button 
+              onClick={() => setShowBalance(!showBalance)}
+              className="hover:opacity-80 transition-opacity"
+            >
+              {showBalance ? <Eye size={20} /> : <EyeOff size={20} />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Навигация */}
+      <div className="flex-1 p-4 overflow-y-auto">
+        <div className="space-y-2">
+          {[
+            { id: 'home', icon: Home, label: 'Главная' },
+            { id: 'transfer', icon: ArrowUpRight, label: 'Переводы' },
+            { id: 'payments', icon: Smartphone, label: 'Оплата услуг' },
+            { id: 'marketplace', icon: ShoppingBag, label: 'Магазин' },
+            { id: 'investments', icon: TrendingUp, label: 'Инвестиции' },
+            { id: 'analytics', icon: LineChart, label: 'Аналитика' },
+            { id: 'ai-assistant', icon: Cpu, label: 'AI Ассистент' },
+            { id: 'qr', icon: QrCode, label: 'QR Платежи' },
+            { id: 'bank', icon: Building2, label: 'Банк' },
+            { id: 'deposits', icon: PiggyBank, label: 'Депозиты' },
+            { id: 'profile', icon: User, label: 'Профиль' }
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setCurrentScreen(item.id);
+                if (isMobile) setSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${currentScreen === item.id ? 'bg-opacity-20' : 'hover:bg-opacity-10'}`}
+              style={{
+                backgroundColor: currentScreen === item.id ? `${colors.primary}20` : 'transparent',
+                color: currentScreen === item.id ? colors.primary : colors.text
+              }}
+            >
+              <item.icon size={20} />
+              <span className="font-medium">{item.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Премиум баннер */}
+      <div className="p-6 border-t" style={{ borderColor: colors.border }}>
+        <Card hover={false}>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isPremium ? 'bg-gradient-to-br from-yellow-500 to-orange-500' : 'bg-gradient-to-br from-gray-400 to-gray-600'}`}>
+                {isPremium ? '👑' : '⭐'}
+              </div>
+              <div>
+                <div className="font-semibold" style={{ color: colors.text }}>
+                  {isPremium ? 'Премиум' : 'Обычный'}
+                </div>
+                <div className="text-xs" style={{ color: colors.textSecondary }}>
+                  {isPremium ? 'AI активирован' : 'Откройте премиум'}
+                </div>
+              </div>
+            </div>
+            {!isPremium && (
+              <Button 
+                size="sm" 
+                fullWidth 
+                onClick={() => {
+                  setIsPremium(true);
+                  showNotification('Премиум активирован!');
+                }}
+              >
+                Активировать
+              </Button>
+            )}
+          </div>
+        </Card>
+      </div>
     </div>
   );
 
@@ -303,26 +440,26 @@ const SapphireSuperApp = () => {
   // Онбординг
   const OnboardingScreen = () => (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: colors.background }}>
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="max-w-md w-full text-center space-y-8">
+      <div className="flex-1 flex items-center justify-center p-4 md:p-8">
+        <div className="max-w-md w-full text-center space-y-6 md:space-y-8">
           <div 
-            className="w-48 h-48 mx-auto rounded-full flex items-center justify-center text-8xl shadow-2xl"
+            className="w-32 h-32 md:w-48 md:h-48 mx-auto rounded-full flex items-center justify-center text-6xl md:text-8xl shadow-2xl"
             style={{ background: `linear-gradient(135deg, ${onboardingSlides[onboardingStep].gradient[0]}, ${onboardingSlides[onboardingStep].gradient[1]})` }}
           >
             {onboardingSlides[onboardingStep].icon}
           </div>
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold" style={{ color: colors.text }}>
+          <div className="space-y-3 md:space-y-4">
+            <h2 className="text-2xl md:text-3xl font-bold px-4" style={{ color: colors.text }}>
               {onboardingSlides[onboardingStep].title}
             </h2>
-            <p className="text-lg" style={{ color: colors.textSecondary }}>
+            <p className="text-base md:text-lg px-4" style={{ color: colors.textSecondary }}>
               {onboardingSlides[onboardingStep].description}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="p-8 space-y-6">
+      <div className="p-6 md:p-8 space-y-6">
         <div className="flex justify-center gap-2">
           {onboardingSlides.map((_, idx) => (
             <div
@@ -359,324 +496,20 @@ const SapphireSuperApp = () => {
     </div>
   );
 
-  // Регистрация
-  const RegistrationScreen = () => {
-    const steps = ['phone', 'sms', 'iin', 'photo', 'pin', 'biometric'];
-    const currentStep = steps[registrationStep];
-
-    const handlePhoneSubmit = () => {
-      if (phoneNumber.replace(/\D/g, '').length >= 11) {
-        setRegistrationStep(1);
-        showNotification('SMS код отправлен');
-        setTimeout(() => {
-          if (smsInputRef.current) {
-            smsInputRef.current.focus();
-          }
-        }, 100);
-      }
-    };
-
-    const handleSmsSubmit = () => {
-      if (smsCode.length === 4) {
-        setRegistrationStep(2);
-        setTimeout(() => {
-          if (iinInputRef.current) {
-            iinInputRef.current.focus();
-          }
-        }, 100);
-      }
-    };
-
-    const renderStep = () => {
-      switch(currentStep) {
-        case 'phone':
-          return (
-            <div className="space-y-6">
-              <div className="text-center space-y-2">
-                <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-4xl mb-4">
-                  📱
-                </div>
-                <h2 className="text-3xl font-bold" style={{ color: colors.text }}>Регистрация</h2>
-                <p style={{ color: colors.textSecondary }}>Введите номер телефона</p>
-              </div>
-              <Input
-                label="Номер телефона"
-                value={phoneNumber}
-                onChange={setPhoneNumber}
-                placeholder="+7 701 123 4567"
-                icon={Phone}
-                type="tel"
-                inputRef={phoneInputRef}
-                autoFocus={true}
-              />
-              <Button
-                fullWidth
-                onClick={handlePhoneSubmit}
-                disabled={phoneNumber.replace(/\D/g, '').length < 11}
-              >
-                Получить код
-              </Button>
-            </div>
-          );
-
-        case 'sms':
-          return (
-            <div className="space-y-6">
-              <div className="text-center space-y-2">
-                <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-green-500 to-teal-500 flex items-center justify-center text-4xl mb-4">
-                  💬
-                </div>
-                <h2 className="text-3xl font-bold" style={{ color: colors.text }}>Подтверждение</h2>
-                <p style={{ color: colors.textSecondary }}>
-                  Введите код из SMS<br/>
-                  отправленный на {phoneNumber}
-                </p>
-              </div>
-              <Input
-                label="Код из SMS (4 цифры)"
-                value={smsCode}
-                onChange={setSmsCode}
-                placeholder="1234"
-                type="text"
-                icon={MessageSquare}
-                inputRef={smsInputRef}
-                autoFocus={true}
-              />
-              <Button 
-                fullWidth 
-                onClick={handleSmsSubmit}
-                disabled={smsCode.length < 4}
-              >
-                Подтвердить
-              </Button>
-              <Button variant="ghost" fullWidth onClick={() => showNotification('Код отправлен повторно')}>
-                Отправить код повторно
-              </Button>
-            </div>
-          );
-
-        case 'iin':
-          return (
-            <div className="space-y-6">
-              <div className="text-center space-y-2">
-                <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center text-4xl mb-4">
-                  🪪
-                </div>
-                <h2 className="text-3xl font-bold" style={{ color: colors.text }}>Данные</h2>
-                <p style={{ color: colors.textSecondary }}>Введите ИИН для идентификации</p>
-              </div>
-              <Input
-                label="ИИН (12 цифр)"
-                value={iin}
-                onChange={setIin}
-                placeholder="000000000000"
-                type="text"
-                icon={FileText}
-                inputRef={iinInputRef}
-                autoFocus={true}
-              />
-              <div className="rounded-2xl p-4 flex items-start gap-3" style={{ backgroundColor: `${colors.info}20` }}>
-                <Info size={20} style={{ color: colors.info }} className="flex-shrink-0 mt-1" />
-                <p className="text-sm" style={{ color: colors.text }}>
-                  Ваши данные защищены и используются только для идентификации согласно законодательству РК
-                </p>
-              </div>
-              <Button 
-                fullWidth 
-                onClick={() => setRegistrationStep(3)} 
-                disabled={iin.length !== 12}
-              >
-                Продолжить
-              </Button>
-            </div>
-          );
-
-        case 'photo':
-          return (
-            <div className="space-y-6">
-              <div className="text-center space-y-2">
-                <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-pink-500 to-red-500 flex items-center justify-center text-4xl mb-4">
-                  📸
-                </div>
-                <h2 className="text-3xl font-bold" style={{ color: colors.text }}>Селфи</h2>
-                <p style={{ color: colors.textSecondary }}>Сделайте фото для подтверждения личности</p>
-              </div>
-              <div 
-                className="aspect-square rounded-3xl flex items-center justify-center border-4 border-dashed"
-                style={{ borderColor: colors.border, backgroundColor: colors.backgroundSecondary }}
-              >
-                <div className="text-center space-y-4">
-                  <Camera size={64} style={{ color: colors.textSecondary }} className="mx-auto" />
-                  <Button icon={Camera}>Сделать фото</Button>
-                </div>
-              </div>
-              <Button fullWidth onClick={() => setRegistrationStep(4)}>
-                Продолжить
-              </Button>
-            </div>
-          );
-
-        case 'pin':
-          return (
-            <div className="space-y-6">
-              <div className="text-center space-y-2">
-                <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-4xl mb-4">
-                  🔐
-                </div>
-                <h2 className="text-3xl font-bold" style={{ color: colors.text }}>PIN-код</h2>
-                <p style={{ color: colors.textSecondary }}>Создайте 4-значный PIN для входа</p>
-              </div>
-              <div className="flex justify-center gap-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold"
-                    style={{
-                      backgroundColor: pinCode.length >= i ? colors.primary : colors.backgroundSecondary,
-                      color: pinCode.length >= i ? 'white' : colors.textSecondary
-                    }}
-                  >
-                    {pinCode.length >= i ? '●' : '○'}
-                  </div>
-                ))}
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map((num, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      if (num === '⌫') {
-                        setPinCode(pinCode.slice(0, -1));
-                      } else if (num !== '' && pinCode.length < 4) {
-                        const newPin = pinCode + num;
-                        setPinCode(newPin);
-                        if (newPin.length === 4) {
-                          setTimeout(() => setRegistrationStep(5), 300);
-                        }
-                      }
-                    }}
-                    className="aspect-square rounded-2xl text-2xl font-bold transition-all hover:scale-105 active:scale-95"
-                    style={{
-                      backgroundColor: num === '' ? 'transparent' : colors.card,
-                      color: colors.text,
-                      border: `2px solid ${colors.border}`
-                    }}
-                    disabled={num === ''}
-                  >
-                    {num}
-                  </button>
-                ))}
-              </div>
-            </div>
-          );
-
-        case 'biometric':
-          return (
-            <div className="space-y-6">
-              <div className="text-center space-y-2">
-                <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-4xl mb-4">
-                  👆
-                </div>
-                <h2 className="text-3xl font-bold" style={{ color: colors.text }}>Биометрия</h2>
-                <p style={{ color: colors.textSecondary }}>
-                  Включите вход по отпечатку пальца<br/>
-                  или Face ID для быстрого доступа
-                </p>
-              </div>
-              <div className="space-y-4">
-                <Card>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-                        <Fingerprint size={24} className="text-white" />
-                      </div>
-                      <div>
-                        <div className="font-semibold" style={{ color: colors.text }}>Touch ID / Face ID</div>
-                        <div className="text-sm" style={{ color: colors.textSecondary }}>Быстрый и безопасный вход</div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-              <Button
-                fullWidth
-                icon={CheckCircle}
-                onClick={() => {
-                  const userWithCashback = {
-                    ...mockUserData,
-                    cashback: cashbackBalance,
-                    premium: isPremium
-                  };
-                  setUserData(userWithCashback);
-                  setCurrentScreen('home');
-                  showNotification('Регистрация завершена! Получите 500₸ на бонусный счет!');
-                }}
-              >
-                Включить и завершить
-              </Button>
-              <Button variant="ghost" fullWidth onClick={() => {
-                const userWithCashback = {
-                  ...mockUserData,
-                  cashback: cashbackBalance,
-                  premium: isPremium
-                };
-                setUserData(userWithCashback);
-                setCurrentScreen('home');
-              }}>
-                Пропустить
-              </Button>
-            </div>
-          );
-
-        default:
-          return null;
-      }
-    };
-
-    return (
-      <div className="min-h-screen p-6" style={{ backgroundColor: colors.background }}>
-        <div className="max-w-md mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            {registrationStep > 0 && (
-              <button 
-                onClick={() => setRegistrationStep(Math.max(0, registrationStep - 1))}
-                className="p-2 rounded-lg hover:bg-opacity-20 hover:bg-gray-400 transition-colors"
-              >
-                <ArrowLeft size={24} style={{ color: colors.text }} />
-              </button>
-            )}
-            <div className="flex-1 flex justify-center gap-2 mx-4">
-              {steps.map((_, idx) => (
-                <div
-                  key={idx}
-                  className="h-1 flex-1 rounded-full transition-all"
-                  style={{
-                    backgroundColor: idx <= registrationStep ? colors.primary : colors.border
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-          {renderStep()}
-        </div>
-      </div>
-    );
-  };
-
   // Главный экран
   const HomeScreen = () => {
     const totalBalance = mockUserData.cards.reduce((sum, card) => sum + card.balance, 0);
     
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Карусель карт */}
-        <div className="relative -mx-4 px-4">
-          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+        <div className="relative -mx-4 md:-mx-0 px-4 md:px-0">
+          <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
             {mockUserData.cards.map((card, idx) => (
               <div
                 key={idx}
                 onClick={() => setSelectedCard(idx)}
-                className="min-w-[85%] snap-center"
+                className={`${isMobile ? 'min-w-[85%]' : 'min-w-[300px]'} snap-center`}
               >
                 <div
                   className="rounded-3xl p-6 text-white relative overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]"
@@ -687,7 +520,7 @@ const SapphireSuperApp = () => {
                 >
                   <div className="relative z-10">
                     <div className="text-sm opacity-80 mb-1">{card.type}</div>
-                    <div className="text-4xl font-bold mb-6 flex items-center gap-3">
+                    <div className="text-3xl md:text-4xl font-bold mb-4 md:mb-6 flex items-center gap-2 md:gap-3">
                       {showBalance ? `${card.balance.toLocaleString()} ${card.currency}` : '••• •••'}
                       <button 
                         onClick={(e) => { 
@@ -696,20 +529,20 @@ const SapphireSuperApp = () => {
                         }}
                         className="hover:opacity-80 transition-opacity"
                       >
-                        {showBalance ? <Eye size={24} /> : <EyeOff size={24} />}
+                        {showBalance ? <Eye size={20} /> : <EyeOff size={20} />}
                       </button>
                     </div>
                     <div className="flex justify-between items-end">
                       <div>
                         <div className="text-xs opacity-80">Номер карты</div>
-                        <div className="text-lg font-semibold tracking-wider">{card.number}</div>
+                        <div className="text-base md:text-lg font-semibold tracking-wider">{card.number}</div>
                       </div>
-                      <div className="flex gap-2">
-                        <button className="bg-white/20 backdrop-blur-sm p-3 rounded-xl hover:bg-white/30 transition">
-                          <Plus size={20} />
+                      <div className="flex gap-1 md:gap-2">
+                        <button className="bg-white/20 backdrop-blur-sm p-2 md:p-3 rounded-xl hover:bg-white/30 transition">
+                          <Plus size={isMobile ? 18 : 20} />
                         </button>
-                        <button className="bg-white/20 backdrop-blur-sm p-3 rounded-xl hover:bg-white/30 transition">
-                          <Send size={20} />
+                        <button className="bg-white/20 backdrop-blur-sm p-2 md:p-3 rounded-xl hover:bg-white/30 transition">
+                          <Send size={isMobile ? 18 : 20} />
                         </button>
                       </div>
                     </div>
@@ -723,18 +556,18 @@ const SapphireSuperApp = () => {
         </div>
 
         {/* Кэшбек и AI Ассистент */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Кэшбек карта */}
           <Card>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 md:gap-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${colors.success}20` }}>
                     <Percent size={20} style={{ color: colors.success }} />
                   </div>
                   <div>
                     <div className="text-sm" style={{ color: colors.textSecondary }}>Кэшбек</div>
-                    <div className="text-xl font-bold" style={{ color: colors.text }}>{cashbackBalance} ₸</div>
+                    <div className="text-xl md:text-2xl font-bold" style={{ color: colors.text }}>{cashbackBalance} ₸</div>
                   </div>
                 </div>
                 <Button 
@@ -745,7 +578,7 @@ const SapphireSuperApp = () => {
                   Использовать
                 </Button>
               </div>
-              <div className="text-xs" style={{ color: colors.textSecondary }}>
+              <div className="text-xs md:text-sm" style={{ color: colors.textSecondary }}>
                 +125₸ за последнюю покупку. До 20% кэшбека в магазинах
               </div>
             </div>
@@ -755,13 +588,13 @@ const SapphireSuperApp = () => {
           <Card onClick={() => isPremium ? setCurrentScreen('ai-assistant') : showNotification('AI ассистент доступен с премиум подпиской', 'info')}>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 md:gap-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${colors.primary}20` }}>
                     <Cpu size={20} style={{ color: colors.primary }} />
                   </div>
                   <div>
                     <div className="text-sm" style={{ color: colors.textSecondary }}>AI Ассистент</div>
-                    <div className="text-lg font-bold" style={{ color: colors.text }}>
+                    <div className="text-lg md:text-xl font-bold" style={{ color: colors.text }}>
                       {isPremium ? 'Активен' : 'Premium'}
                     </div>
                   </div>
@@ -772,7 +605,7 @@ const SapphireSuperApp = () => {
                   </div>
                 )}
               </div>
-              <div className="text-xs" style={{ color: colors.textSecondary }}>
+              <div className="text-xs md:text-sm" style={{ color: colors.textSecondary }}>
                 {isPremium ? 'Персональные советы по финансам' : 'Откройте премиум для доступа'}
               </div>
             </div>
@@ -781,7 +614,7 @@ const SapphireSuperApp = () => {
 
         {/* Быстрые действия */}
         <Card>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-4 gap-3 md:gap-4">
             {[
               { icon: ArrowUpRight, label: 'Перевод', color: colors.danger, action: () => setCurrentScreen('transfer') },
               { icon: Smartphone, label: 'Связь', color: colors.secondary, action: () => setCurrentScreen('payments') },
@@ -794,12 +627,12 @@ const SapphireSuperApp = () => {
                 className="flex flex-col items-center gap-2 transition-transform hover:scale-105"
               >
                 <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                  className={`${isMobile ? 'w-12 h-12' : 'w-14 h-14'} rounded-2xl flex items-center justify-center`}
                   style={{ backgroundColor: `${action.color}20` }}
                 >
-                  <action.icon size={24} style={{ color: action.color }} />
+                  <action.icon size={isMobile ? 20 : 24} style={{ color: action.color }} />
                 </div>
-                <span className="text-xs font-medium" style={{ color: colors.text }}>{action.label}</span>
+                <span className="text-xs font-medium text-center" style={{ color: colors.text }}>{action.label}</span>
               </button>
             ))}
           </div>
@@ -808,10 +641,10 @@ const SapphireSuperApp = () => {
         {/* Сервисы */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold" style={{ color: colors.text }}>Сервисы</h3>
+            <h3 className="text-lg md:text-xl font-bold" style={{ color: colors.text }}>Сервисы</h3>
             <button style={{ color: colors.primary }} className="text-sm font-medium">Все</button>
           </div>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
             {[
               { icon: ShoppingBag, label: 'Магазин', color: colors.secondary, screen: 'marketplace' },
               { icon: TrendingUp, label: 'Инвестиции', color: '#A29BFE', screen: 'investments' },
@@ -821,14 +654,14 @@ const SapphireSuperApp = () => {
               <button
                 key={idx}
                 onClick={() => setCurrentScreen(service.screen)}
-                className="flex flex-col items-center gap-2 p-4 rounded-2xl transition-transform hover:scale-105"
+                className="flex flex-col items-center gap-2 p-3 md:p-4 rounded-2xl transition-transform hover:scale-105"
                 style={{ backgroundColor: colors.card, border: `1px solid ${colors.border}` }}
               >
                 <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center"
+                  className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} rounded-xl flex items-center justify-center`}
                   style={{ backgroundColor: `${service.color}20` }}
                 >
-                  <service.icon size={22} style={{ color: service.color }} />
+                  <service.icon size={isMobile ? 18 : 22} style={{ color: service.color }} />
                 </div>
                 <span className="text-xs font-medium text-center" style={{ color: colors.text }}>
                   {service.label}
@@ -841,30 +674,30 @@ const SapphireSuperApp = () => {
         {/* Транзакции с кэшбеком */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold" style={{ color: colors.text }}>История</h3>
-            <button onClick={() => setCurrentScreen('history')} style={{ color: colors.primary }} className="text-sm font-medium">
+            <h3 className="text-lg md:text-xl font-bold" style={{ color: colors.text }}>История</h3>
+            <button onClick={() => {/* TODO: экран истории */}} style={{ color: colors.primary }} className="text-sm font-medium">
               Все
             </button>
           </div>
           <div className="space-y-3">
             {transactions.slice(0, 5).map((tx) => (
-              <Card key={tx.id} onClick={() => setCurrentScreen('transaction-detail')}>
+              <Card key={tx.id}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center"
+                      className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center"
                       style={{ backgroundColor: `${tx.amount > 0 ? colors.success : colors.danger}20` }}
                     >
-                      <tx.icon size={20} style={{ color: tx.amount > 0 ? colors.success : colors.danger }} />
+                      <tx.icon size={isMobile ? 18 : 20} style={{ color: tx.amount > 0 ? colors.success : colors.danger }} />
                     </div>
-                    <div>
-                      <div className="font-semibold" style={{ color: colors.text }}>{tx.name}</div>
-                      <div className="text-sm" style={{ color: colors.textSecondary }}>{tx.date}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold truncate" style={{ color: colors.text }}>{tx.name}</div>
+                      <div className="text-xs md:text-sm truncate" style={{ color: colors.textSecondary }}>{tx.date}</div>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right min-w-[100px]">
                     <div
-                      className="text-lg font-bold"
+                      className="text-base md:text-lg font-bold"
                       style={{ color: tx.amount > 0 ? colors.success : colors.text }}
                     >
                       {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString()} ₸
@@ -889,17 +722,17 @@ const SapphireSuperApp = () => {
     if (!isPremium) {
       return (
         <div className="space-y-6 p-4">
-          <div className="text-center space-y-4 py-12">
-            <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-5xl">
+          <div className="text-center space-y-4 py-8 md:py-12">
+            <div className="w-24 h-24 md:w-32 md:h-32 mx-auto rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-4xl md:text-5xl">
               🤖
             </div>
-            <h2 className="text-3xl font-bold" style={{ color: colors.text }}>AI Финансовый Ассистент</h2>
-            <p style={{ color: colors.textSecondary }}>Доступен только для пользователей с премиум подпиской</p>
+            <h2 className="text-2xl md:text-3xl font-bold" style={{ color: colors.text }}>AI Финансовый Ассистент</h2>
+            <p className="px-4" style={{ color: colors.textSecondary }}>Доступен только для пользователей с премиум подпиской</p>
             
             <Card>
               <div className="space-y-4">
-                <h3 className="text-xl font-bold text-center" style={{ color: colors.text }}>Премиум подписка</h3>
-                <ul className="space-y-2 text-sm" style={{ color: colors.textSecondary }}>
+                <h3 className="text-lg md:text-xl font-bold text-center" style={{ color: colors.text }}>Премиум подписка</h3>
+                <ul className="space-y-2 text-sm md:text-base" style={{ color: colors.textSecondary }}>
                   <li className="flex items-center gap-2">
                     <Check size={16} style={{ color: colors.success }} /> AI анализ расходов
                   </li>
@@ -916,7 +749,6 @@ const SapphireSuperApp = () => {
                 <Button fullWidth onClick={() => {
                   setIsPremium(true);
                   showNotification('Премиум подписка активирована!');
-                  setCurrentScreen('ai-assistant');
                 }}>
                   Купить за 4,990₸/мес
                 </Button>
@@ -932,26 +764,26 @@ const SapphireSuperApp = () => {
     }
 
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex items-center gap-3 md:gap-4">
           <button 
             onClick={() => setCurrentScreen('home')}
             className="p-2 rounded-lg hover:bg-opacity-20 hover:bg-gray-400 transition-colors"
           >
             <ArrowLeft size={24} style={{ color: colors.text }} />
           </button>
-          <h2 className="text-2xl font-bold" style={{ color: colors.text }}>AI Финансовый Ассистент</h2>
+          <h2 className="text-xl md:text-2xl font-bold" style={{ color: colors.text }}>AI Финансовый Ассистент</h2>
         </div>
 
         {/* Приветствие */}
         <Card>
-          <div className="flex items-start gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-3xl flex-shrink-0">
+          <div className="flex items-start gap-3 md:gap-4">
+            <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-2xl md:text-3xl flex-shrink-0">
               🤖
             </div>
-            <div>
-              <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>Привет, {userData?.name?.split(' ')[0]}!</h3>
-              <p style={{ color: colors.textSecondary }}>
+            <div className="flex-1">
+              <h3 className="text-lg md:text-xl font-bold mb-2" style={{ color: colors.text }}>Привет, {userData?.name?.split(' ')[0]}!</h3>
+              <p className="text-sm md:text-base" style={{ color: colors.textSecondary }}>
                 Я ваш персональный финансовый помощник. Вот мои рекомендации:
               </p>
             </div>
@@ -960,12 +792,12 @@ const SapphireSuperApp = () => {
 
         {/* Текущий совет */}
         <Card>
-          <div className="space-y-4">
-            <h3 className="font-bold text-lg flex items-center gap-2" style={{ color: colors.text }}>
+          <div className="space-y-3 md:space-y-4">
+            <h3 className="font-bold text-base md:text-lg flex items-center gap-2" style={{ color: colors.text }}>
               <Cpu size={20} /> Текущая рекомендация
             </h3>
-            <div className="p-4 rounded-xl" style={{ backgroundColor: `${colors.primary}10` }}>
-              <p style={{ color: colors.text }}>{aiAdvice}</p>
+            <div className="p-3 md:p-4 rounded-xl" style={{ backgroundColor: `${colors.primary}10` }}>
+              <p className="text-sm md:text-base" style={{ color: colors.text }}>{aiAdvice}</p>
             </div>
             <Button variant="ghost" size="sm" onClick={() => {
               const adviceList = [
@@ -985,11 +817,11 @@ const SapphireSuperApp = () => {
 
         {/* Аналитика расходов */}
         <Card>
-          <h3 className="font-bold text-lg mb-4" style={{ color: colors.text }}>Анализ ваших расходов</h3>
-          <div className="space-y-4">
+          <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4" style={{ color: colors.text }}>Анализ ваших расходов</h3>
+          <div className="space-y-3 md:space-y-4">
             {expenses.map((exp, idx) => (
-              <div key={idx} className="space-y-2">
-                <div className="flex items-center justify-between">
+              <div key={idx} className="space-y-1 md:space-y-2">
+                <div className="flex items-center justify-between text-sm">
                   <span style={{ color: colors.text }}>{exp.category}</span>
                   <span style={{ color: colors.text }}>{exp.amount.toLocaleString()} ₸</span>
                 </div>
@@ -1009,21 +841,21 @@ const SapphireSuperApp = () => {
 
         {/* Инвестиционные идеи */}
         <Card>
-          <h3 className="font-bold text-lg mb-4" style={{ color: colors.text }}>Инвестиционные идеи</h3>
-          <div className="space-y-3">
+          <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4" style={{ color: colors.text }}>Инвестиционные идеи</h3>
+          <div className="space-y-2 md:space-y-3">
             {[
               { name: 'ETF S&P 500', risk: 'Низкий', potential: '8-12%', amount: 'от 10,000₸' },
               { name: 'Технологические акции', risk: 'Средний', potential: '15-25%', amount: 'от 50,000₸' },
               { name: 'Облигации', risk: 'Низкий', potential: '6-9%', amount: 'от 100,000₸' }
             ].map((idea, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 rounded-xl" style={{ backgroundColor: colors.backgroundSecondary }}>
+              <div key={idx} className="flex items-center justify-between p-2 md:p-3 rounded-xl" style={{ backgroundColor: colors.backgroundSecondary }}>
                 <div>
-                  <div className="font-semibold" style={{ color: colors.text }}>{idea.name}</div>
-                  <div className="text-sm" style={{ color: colors.textSecondary }}>Риск: {idea.risk}</div>
+                  <div className="font-semibold text-sm md:text-base" style={{ color: colors.text }}>{idea.name}</div>
+                  <div className="text-xs md:text-sm" style={{ color: colors.textSecondary }}>Риск: {idea.risk}</div>
                 </div>
                 <div className="text-right">
-                  <div className="font-bold" style={{ color: colors.success }}>{idea.potential}</div>
-                  <div className="text-sm" style={{ color: colors.textSecondary }}>{idea.amount}</div>
+                  <div className="font-bold text-sm md:text-base" style={{ color: colors.success }}>{idea.potential}</div>
+                  <div className="text-xs md:text-sm" style={{ color: colors.textSecondary }}>{idea.amount}</div>
                 </div>
               </div>
             ))}
@@ -1032,8 +864,8 @@ const SapphireSuperApp = () => {
 
         {/* Чат с AI */}
         <Card>
-          <h3 className="font-bold text-lg mb-4" style={{ color: colors.text }}>Задайте вопрос AI</h3>
-          <div className="space-y-3">
+          <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4" style={{ color: colors.text }}>Задайте вопрос AI</h3>
+          <div className="space-y-2 md:space-y-3">
             <div className="flex gap-2">
               <Input
                 placeholder="Например: Как оптимизировать бюджет?"
@@ -1043,7 +875,7 @@ const SapphireSuperApp = () => {
               />
               <Button>Отправить</Button>
             </div>
-            <div className="text-xs" style={{ color: colors.textSecondary }}>
+            <div className="text-xs md:text-sm" style={{ color: colors.textSecondary }}>
               Примеры вопросов: "Как сэкономить на коммуналке?", "Куда инвестировать 100,000₸?", "Как снизить расходы?"
             </div>
           </div>
@@ -1052,27 +884,27 @@ const SapphireSuperApp = () => {
     );
   };
 
-  // Аналитика расходов с графиком
+  // Аналитика расходов
   const AnalyticsScreen = () => {
     const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
     
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex items-center gap-3 md:gap-4">
           <button 
             onClick={() => setCurrentScreen('home')}
             className="p-2 rounded-lg hover:bg-opacity-20 hover:bg-gray-400 transition-colors"
           >
             <ArrowLeft size={24} style={{ color: colors.text }} />
           </button>
-          <h2 className="text-2xl font-bold" style={{ color: colors.text }}>Аналитика расходов</h2>
+          <h2 className="text-xl md:text-2xl font-bold" style={{ color: colors.text }}>Аналитика расходов</h2>
         </div>
 
         {/* Итого за месяц */}
         <Card>
           <div className="text-center space-y-2">
             <div className="text-sm" style={{ color: colors.textSecondary }}>Расходы за декабрь</div>
-            <div className="text-4xl font-bold" style={{ color: colors.text }}>
+            <div className="text-3xl md:text-4xl font-bold" style={{ color: colors.text }}>
               {totalExpenses.toLocaleString()} ₸
             </div>
             <div className="flex items-center justify-center gap-2">
@@ -1084,14 +916,14 @@ const SapphireSuperApp = () => {
 
         {/* Круговая диаграмма */}
         <Card>
-          <h3 className="font-bold text-lg mb-4" style={{ color: colors.text }}>Распределение расходов</h3>
-          <div className="flex flex-col items-center space-y-4">
+          <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4" style={{ color: colors.text }}>Распределение расходов</h3>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:gap-8 space-y-4 lg:space-y-0">
             {/* Визуализация круговой диаграммы */}
-            <div className="relative w-64 h-64">
+            <div className="relative w-48 h-48 md:w-64 md:h-64 mx-auto lg:mx-0">
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-3xl font-bold" style={{ color: colors.text }}>100%</div>
-                  <div className="text-sm" style={{ color: colors.textSecondary }}>Все расходы</div>
+                  <div className="text-2xl md:text-3xl font-bold" style={{ color: colors.text }}>100%</div>
+                  <div className="text-xs md:text-sm" style={{ color: colors.textSecondary }}>Все расходы</div>
                 </div>
               </div>
               <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
@@ -1126,19 +958,19 @@ const SapphireSuperApp = () => {
             </div>
             
             {/* Легенда */}
-            <div className="w-full space-y-2">
+            <div className="w-full lg:flex-1 space-y-2 md:space-y-3">
               {expenses.map((exp, idx) => (
                 <div key={idx} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div 
-                      className="w-4 h-4 rounded-full"
+                      className="w-3 h-3 md:w-4 md:h-4 rounded-full"
                       style={{ backgroundColor: exp.color }}
                     />
-                    <span style={{ color: colors.text }}>{exp.category}</span>
+                    <span className="text-sm md:text-base" style={{ color: colors.text }}>{exp.category}</span>
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold" style={{ color: colors.text }}>{exp.amount.toLocaleString()} ₸</div>
-                    <div className="text-xs" style={{ color: colors.textSecondary }}>{exp.percent}%</div>
+                    <div className="font-semibold text-sm md:text-base" style={{ color: colors.text }}>{exp.amount.toLocaleString()} ₸</div>
+                    <div className="text-xs md:text-sm" style={{ color: colors.textSecondary }}>{exp.percent}%</div>
                   </div>
                 </div>
               ))}
@@ -1146,69 +978,17 @@ const SapphireSuperApp = () => {
           </div>
         </Card>
 
-        {/* Детали по категориям */}
-        <Card>
-          <h3 className="font-bold text-lg mb-4" style={{ color: colors.text }}>Детализация расходов</h3>
-          <div className="space-y-4">
-            {expenses.map((exp, idx) => (
-              <div key={idx} className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium" style={{ color: colors.text }}>{exp.category}</span>
-                  <span className="font-bold" style={{ color: colors.text }}>{exp.amount.toLocaleString()} ₸</span>
-                </div>
-                <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: colors.backgroundSecondary }}>
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${exp.percent}%`,
-                      backgroundColor: exp.color
-                    }}
-                  />
-                </div>
-                <div className="text-xs" style={{ color: colors.textSecondary }}>{exp.percent}% от общих расходов</div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Сравнение с предыдущим месяцем */}
-        <Card>
-          <h3 className="font-bold text-lg mb-4" style={{ color: colors.text }}>Сравнение с ноябрем</h3>
-          <div className="space-y-3">
-            {[
-              { category: 'Продукты', current: 45000, previous: 38000, change: '+18%' },
-              { category: 'Транспорт', current: 25000, previous: 22000, change: '+14%' },
-              { category: 'Развлечения', current: 35000, previous: 28000, change: '+25%' },
-              { category: 'Остальное', current: 30000, previous: 32000, change: '-6%' }
-            ].map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between">
-                <div>
-                  <div style={{ color: colors.text }}>{item.category}</div>
-                  <div className="text-sm" style={{ color: colors.textSecondary }}>
-                    {item.previous.toLocaleString()}₸ → {item.current.toLocaleString()}₸
-                  </div>
-                </div>
-                <div 
-                  className={`font-bold ${item.change.startsWith('+') ? 'text-red-500' : 'text-green-500'}`}
-                >
-                  {item.change}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
         {/* AI рекомендации */}
         <Card onClick={() => isPremium ? setCurrentScreen('ai-assistant') : showNotification('Откройте премиум для доступа к AI ассистенту', 'info')}>
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-2xl flex-shrink-0">
+          <div className="flex items-start gap-3 md:gap-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-xl md:text-2xl flex-shrink-0">
               {isPremium ? '🤖' : '👑'}
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-lg mb-2" style={{ color: colors.text }}>
+              <h3 className="font-bold text-base md:text-lg mb-2" style={{ color: colors.text }}>
                 {isPremium ? 'AI-Рекомендации' : 'Премиум рекомендации'}
               </h3>
-              <ul className="space-y-2 text-sm" style={{ color: colors.textSecondary }}>
+              <ul className="space-y-1 md:space-y-2 text-xs md:text-sm" style={{ color: colors.textSecondary }}>
                 {isPremium ? (
                   <>
                     <li>• Вы тратите на 15% больше на продукты. Попробуйте планировать покупки</li>
@@ -1245,48 +1025,28 @@ const SapphireSuperApp = () => {
       return matchesCategory && matchesSearch;
     });
 
-    const addToCart = (item) => {
-      setCartItems(prev => [...prev, { ...item, quantity: 1 }]);
-      showNotification(`${item.name} добавлен в корзину! Кэшбек: ${item.cashback}%`);
-    };
-
-    const removeFromCart = (itemId) => {
-      setCartItems(prev => prev.filter(item => item.id !== itemId));
-    };
-
-    const getCartTotal = () => {
-      return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-    };
-
-    const getCartCashback = () => {
-      return cartItems.reduce((total, item) => {
-        const cashbackAmount = (item.price * item.quantity * item.cashback) / 100;
-        return total + Math.round(cashbackAmount);
-      }, 0);
-    };
-
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex items-center gap-3 md:gap-4">
           <button 
             onClick={() => setCurrentScreen('home')}
             className="p-2 rounded-lg hover:bg-opacity-20 hover:bg-gray-400 transition-colors"
           >
             <ArrowLeft size={24} style={{ color: colors.text }} />
           </button>
-          <h2 className="text-2xl font-bold" style={{ color: colors.text }}>Магазин</h2>
+          <h2 className="text-xl md:text-2xl font-bold" style={{ color: colors.text }}>Магазин</h2>
         </div>
 
         {/* Поиск */}
         <Card noPadding>
-          <div className="flex items-center p-4">
+          <div className="flex items-center p-3 md:p-4">
             <Search size={20} style={{ color: colors.textSecondary }} className="mr-3" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Поиск товаров..."
-              className="flex-1 outline-none bg-transparent"
+              className="flex-1 outline-none bg-transparent text-sm md:text-base"
               style={{ color: colors.text }}
             />
           </div>
@@ -1298,7 +1058,7 @@ const SapphireSuperApp = () => {
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium whitespace-nowrap transition-colors ${
                 selectedCategory === category ? '' : 'opacity-70'
               }`}
               style={{
@@ -1318,15 +1078,15 @@ const SapphireSuperApp = () => {
               <div className="flex items-center gap-3">
                 <ShoppingCart size={24} style={{ color: colors.primary }} />
                 <div>
-                  <div className="font-semibold" style={{ color: colors.text }}>Корзина</div>
-                  <div className="text-sm" style={{ color: colors.textSecondary }}>
-                    {cartItems.length} товара • {getCartTotal().toLocaleString()} ₸
+                  <div className="font-semibold text-sm md:text-base" style={{ color: colors.text }}>Корзина</div>
+                  <div className="text-xs md:text-sm" style={{ color: colors.textSecondary }}>
+                    {cartItems.length} товара • {cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()} ₸
                   </div>
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-bold text-lg" style={{ color: colors.primary }}>
-                  {getCartCashback()} ₸ кэшбек
+                <div className="font-bold text-base md:text-lg" style={{ color: colors.primary }}>
+                  {cartItems.reduce((sum, item) => sum + Math.round((item.price * item.quantity * item.cashback) / 100), 0).toLocaleString()} ₸ кэшбек
                 </div>
                 <div className="text-xs" style={{ color: colors.textSecondary }}>Оформить заказ →</div>
               </div>
@@ -1335,13 +1095,13 @@ const SapphireSuperApp = () => {
         )}
 
         {/* Товары */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
           {filteredItems.map((item) => (
             <Card key={item.id}>
-              <div className="space-y-3">
+              <div className="space-y-2 md:space-y-3">
                 {/* Изображение товара */}
                 <div 
-                  className="aspect-square rounded-2xl flex items-center justify-center text-6xl mb-2"
+                  className="aspect-square rounded-xl md:rounded-2xl flex items-center justify-center text-5xl md:text-6xl mb-2"
                   style={{ backgroundColor: colors.backgroundSecondary }}
                 >
                   {item.image}
@@ -1350,7 +1110,7 @@ const SapphireSuperApp = () => {
                 {/* Информация о товаре */}
                 <div className="space-y-2">
                   <div className="flex items-start justify-between">
-                    <h3 className="font-semibold text-sm flex-1" style={{ color: colors.text }}>
+                    <h3 className="font-semibold text-xs md:text-sm flex-1" style={{ color: colors.text }}>
                       {item.name}
                     </h3>
                     <div className="flex items-center gap-1">
@@ -1361,7 +1121,7 @@ const SapphireSuperApp = () => {
 
                   {/* Цена и кэшбек */}
                   <div className="space-y-1">
-                    <div className="text-lg font-bold" style={{ color: colors.text }}>
+                    <div className="text-base md:text-lg font-bold" style={{ color: colors.text }}>
                       {item.price.toLocaleString()} ₸
                     </div>
                     <div className="flex items-center justify-between">
@@ -1382,8 +1142,11 @@ const SapphireSuperApp = () => {
                       {item.category}
                     </span>
                     <button
-                      onClick={() => addToCart(item)}
-                      className="px-3 py-1 rounded-lg text-sm font-medium transition-all hover:scale-105"
+                      onClick={() => {
+                        setCartItems(prev => [...prev, { ...item, quantity: 1 }]);
+                        showNotification(`${item.name} добавлен в корзину! Кэшбек: ${item.cashback}%`);
+                      }}
+                      className="px-3 py-1 rounded-lg text-xs md:text-sm font-medium transition-all hover:scale-105"
                       style={{ backgroundColor: colors.primary, color: 'white' }}
                     >
                       В корзину
@@ -1394,27 +1157,6 @@ const SapphireSuperApp = () => {
             </Card>
           ))}
         </div>
-
-        {/* Промо баннер */}
-        <Card>
-          <div className="text-center space-y-4">
-            <div className="text-6xl">🎁</div>
-            <h3 className="text-xl font-bold" style={{ color: colors.text }}>Покупайте с выгодой!</h3>
-            <p style={{ color: colors.textSecondary }}>
-              Получайте до 20% кэшбека за покупки. 
-              Используйте бонусные баллы для оплаты следующих покупок.
-            </p>
-            <div className="flex items-center justify-center gap-2">
-              <div className="px-3 py-1 rounded-lg text-sm font-bold" 
-                   style={{ backgroundColor: `${colors.success}20`, color: colors.success }}>
-                Кэшбек: {cashbackBalance}₸ доступно
-              </div>
-              <Button size="sm" variant="ghost" onClick={() => showNotification('Кэшбек можно использовать при оплате')}>
-                Использовать
-              </Button>
-            </div>
-          </div>
-        </Card>
       </div>
     );
   };
@@ -1425,43 +1167,23 @@ const SapphireSuperApp = () => {
       return cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     };
 
-    const getTotalCashback = () => {
-      return cartItems.reduce((sum, item) => {
-        return sum + Math.round((item.price * item.quantity * item.cashback) / 100);
-      }, 0);
-    };
-
-    const updateQuantity = (itemId, newQuantity) => {
-      if (newQuantity < 1) {
-        removeItem(itemId);
-        return;
-      }
-      setCartItems(prev => prev.map(item => 
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      ));
-    };
-
-    const removeItem = (itemId) => {
-      setCartItems(prev => prev.filter(item => item.id !== itemId));
-    };
-
     if (cartItems.length === 0) {
       return (
-        <div className="space-y-6">
-          <div className="flex items-center gap-4">
+        <div className="space-y-4 md:space-y-6">
+          <div className="flex items-center gap-3 md:gap-4">
             <button 
               onClick={() => setCurrentScreen('marketplace')}
               className="p-2 rounded-lg hover:bg-opacity-20 hover:bg-gray-400 transition-colors"
             >
               <ArrowLeft size={24} style={{ color: colors.text }} />
             </button>
-            <h2 className="text-2xl font-bold" style={{ color: colors.text }}>Корзина</h2>
+            <h2 className="text-xl md:text-2xl font-bold" style={{ color: colors.text }}>Корзина</h2>
           </div>
           
-          <div className="text-center space-y-6 py-20">
-            <div className="text-8xl">🛒</div>
+          <div className="text-center space-y-4 md:space-y-6 py-12 md:py-20">
+            <div className="text-6xl md:text-8xl">🛒</div>
             <div>
-              <h3 className="text-2xl font-bold mb-2" style={{ color: colors.text }}>Корзина пуста</h3>
+              <h3 className="text-xl md:text-2xl font-bold mb-2" style={{ color: colors.text }}>Корзина пуста</h3>
               <p style={{ color: colors.textSecondary }}>Добавьте товары из магазина</p>
             </div>
             <Button fullWidth onClick={() => setCurrentScreen('marketplace')}>
@@ -1473,42 +1195,44 @@ const SapphireSuperApp = () => {
     }
 
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex items-center gap-3 md:gap-4">
           <button 
             onClick={() => setCurrentScreen('marketplace')}
             className="p-2 rounded-lg hover:bg-opacity-20 hover:bg-gray-400 transition-colors"
           >
             <ArrowLeft size={24} style={{ color: colors.text }} />
           </button>
-          <h2 className="text-2xl font-bold" style={{ color: colors.text }}>Корзина</h2>
+          <h2 className="text-xl md:text-2xl font-bold" style={{ color: colors.text }}>Корзина</h2>
         </div>
 
         {/* Список товаров */}
-        <div className="space-y-3">
+        <div className="space-y-2 md:space-y-3">
           {cartItems.map((item) => (
             <Card key={item.id}>
-              <div className="flex gap-4">
+              <div className="flex gap-3 md:gap-4">
                 {/* Изображение */}
                 <div 
-                  className="w-20 h-20 rounded-xl flex items-center justify-center text-3xl flex-shrink-0"
+                  className="w-16 h-16 md:w-20 md:h-20 rounded-xl flex items-center justify-center text-2xl md:text-3xl flex-shrink-0"
                   style={{ backgroundColor: colors.backgroundSecondary }}
                 >
                   {item.image}
                 </div>
 
                 {/* Информация */}
-                <div className="flex-1 space-y-2">
+                <div className="flex-1 space-y-1 md:space-y-2">
                   <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="font-semibold" style={{ color: colors.text }}>{item.name}</h4>
+                    <div className="min-w-0">
+                      <h4 className="font-semibold text-sm md:text-base truncate" style={{ color: colors.text }}>{item.name}</h4>
                       <div className="text-xs" style={{ color: colors.textSecondary }}>{item.category}</div>
                     </div>
                     <button 
-                      onClick={() => removeItem(item.id)}
-                      className="text-red-500 hover:text-red-700"
+                      onClick={() => {
+                        setCartItems(prev => prev.filter(i => i.id !== item.id));
+                      }}
+                      className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2"
                     >
-                      <X size={20} />
+                      <X size={18} />
                     </button>
                   </div>
 
@@ -1516,25 +1240,37 @@ const SapphireSuperApp = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <button 
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-8 h-8 rounded-lg flex items-center justify-center"
+                        onClick={() => {
+                          if (item.quantity > 1) {
+                            setCartItems(prev => prev.map(i => 
+                              i.id === item.id ? { ...i, quantity: i.quantity - 1 } : i
+                            ));
+                          } else {
+                            setCartItems(prev => prev.filter(i => i.id !== item.id));
+                          }
+                        }}
+                        className="w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center"
                         style={{ backgroundColor: colors.backgroundSecondary, color: colors.text }}
                       >
-                        <Minus size={16} />
+                        <Minus size={14} />
                       </button>
-                      <span className="font-bold min-w-[20px] text-center" style={{ color: colors.text }}>
+                      <span className="font-bold min-w-[20px] text-center text-sm md:text-base" style={{ color: colors.text }}>
                         {item.quantity}
                       </span>
                       <button 
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-8 h-8 rounded-lg flex items-center justify-center"
+                        onClick={() => {
+                          setCartItems(prev => prev.map(i => 
+                            i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+                          ));
+                        }}
+                        className="w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center"
                         style={{ backgroundColor: colors.backgroundSecondary, color: colors.text }}
                       >
-                        <Plus size={16} />
+                        <Plus size={14} />
                       </button>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold" style={{ color: colors.text }}>
+                      <div className="font-bold text-sm md:text-base" style={{ color: colors.text }}>
                         {(item.price * item.quantity).toLocaleString()} ₸
                       </div>
                       <div className="text-xs font-medium" style={{ color: colors.success }}>
@@ -1550,38 +1286,22 @@ const SapphireSuperApp = () => {
 
         {/* Итого */}
         <Card>
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             <div className="flex items-center justify-between">
-              <span style={{ color: colors.textSecondary }}>Сумма товаров</span>
-              <span style={{ color: colors.text }}>{getTotal().toLocaleString()} ₸</span>
+              <span className="text-sm" style={{ color: colors.textSecondary }}>Сумма товаров</span>
+              <span className="font-semibold" style={{ color: colors.text }}>{getTotal().toLocaleString()} ₸</span>
             </div>
             <div className="flex items-center justify-between">
-              <span style={{ color: colors.textSecondary }}>Общий кэшбек</span>
-              <span className="font-bold" style={{ color: colors.success }}>+{getTotalCashback().toLocaleString()} ₸</span>
+              <span className="text-sm" style={{ color: colors.textSecondary }}>Общий кэшбек</span>
+              <span className="font-bold" style={{ color: colors.success }}>
+                +{cartItems.reduce((sum, item) => sum + Math.round((item.price * item.quantity * item.cashback) / 100), 0).toLocaleString()} ₸
+              </span>
             </div>
-            <div className="pt-4 border-t" style={{ borderColor: colors.border }}>
+            <div className="pt-3 md:pt-4 border-t" style={{ borderColor: colors.border }}>
               <div className="flex items-center justify-between">
-                <span className="text-lg font-bold" style={{ color: colors.text }}>Итого к оплате</span>
-                <span className="text-2xl font-bold" style={{ color: colors.text }}>{getTotal().toLocaleString()} ₸</span>
+                <span className="text-lg md:text-xl font-bold" style={{ color: colors.text }}>Итого к оплате</span>
+                <span className="text-xl md:text-2xl font-bold" style={{ color: colors.text }}>{getTotal().toLocaleString()} ₸</span>
               </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Доставка */}
-        <Card>
-          <h3 className="font-bold mb-3" style={{ color: colors.text }}>Доставка</h3>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MapPin size={16} style={{ color: colors.primary }} />
-                <span style={{ color: colors.text }}>Алматы, ул. Абая 123</span>
-              </div>
-              <button style={{ color: colors.primary }} className="text-sm">Изменить</button>
-            </div>
-            <div className="flex items-center gap-2">
-              <Calendar size={16} style={{ color: colors.primary }} />
-              <span style={{ color: colors.text }}>Завтра, 10:00 - 18:00</span>
             </div>
           </div>
         </Card>
@@ -1592,7 +1312,7 @@ const SapphireSuperApp = () => {
           size="lg"
           onClick={() => {
             const total = getTotal();
-            const cashback = getTotalCashback();
+            const cashback = cartItems.reduce((sum, item) => sum + Math.round((item.price * item.quantity * item.cashback) / 100), 0);
             showNotification(`Заказ оформлен! Сумма: ${total.toLocaleString()}₸. Кэшбек: +${cashback}₸`, 'success');
             setCashbackBalance(prev => prev + cashback);
             setCartItems([]);
@@ -1620,17 +1340,9 @@ const SapphireSuperApp = () => {
     );
   };
 
-  // Экран переводов (оставляем как было, но добавляем фокус на инпуты)
+  // Экран переводов
   const TransferScreen = () => {
     const [step, setStep] = useState('method');
-    const recipientInputRef = useRef(null);
-    const amountInputRef = useRef(null);
-
-    useEffect(() => {
-      if (step === 'details' && recipientInputRef.current) {
-        setTimeout(() => recipientInputRef.current.focus(), 100);
-      }
-    }, [step]);
 
     const transferMethods = [
       { id: 'phone', icon: Phone, title: 'По номеру телефона', desc: 'Перевод на +7 номер' },
@@ -1641,54 +1353,29 @@ const SapphireSuperApp = () => {
 
     if (step === 'method') {
       return (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold" style={{ color: colors.text }}>Переводы</h2>
+        <div className="space-y-4 md:space-y-6">
+          <h2 className="text-xl md:text-2xl font-bold" style={{ color: colors.text }}>Переводы</h2>
           <div className="space-y-3">
             {transferMethods.map((method) => (
               <Card key={method.id} onClick={() => {
                 setTransferData({ ...transferData, type: method.id });
                 setStep('details');
               }}>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 md:gap-4">
                   <div
-                    className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                    className="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center"
                     style={{ backgroundColor: `${colors.primary}20` }}
                   >
-                    <method.icon size={26} style={{ color: colors.primary }} />
+                    <method.icon size={isMobile ? 22 : 26} style={{ color: colors.primary }} />
                   </div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-lg" style={{ color: colors.text }}>{method.title}</div>
-                    <div className="text-sm" style={{ color: colors.textSecondary }}>{method.desc}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-base md:text-lg truncate" style={{ color: colors.text }}>{method.title}</div>
+                    <div className="text-xs md:text-sm truncate" style={{ color: colors.textSecondary }}>{method.desc}</div>
                   </div>
-                  <ChevronRight size={24} style={{ color: colors.textSecondary }} />
+                  <ChevronRight size={20} style={{ color: colors.textSecondary }} />
                 </div>
               </Card>
             ))}
-          </div>
-
-          {/* Недавние получатели */}
-          <div>
-            <h3 className="text-lg font-bold mb-4" style={{ color: colors.text }}>Недавние</h3>
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {['Асель К.', 'Нурлан А.', 'Дина С.', 'Бауыржан М.'].map((name, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setTransferData({ ...transferData, recipient: name });
-                    setStep('details');
-                  }}
-                  className="flex flex-col items-center gap-2 min-w-[80px]"
-                >
-                  <div
-                    className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold text-white"
-                    style={{ background: `linear-gradient(135deg, ${colors.primary}, #A29BFE)` }}
-                  >
-                    {name[0]}
-                  </div>
-                  <span className="text-xs font-medium text-center" style={{ color: colors.text }}>{name}</span>
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       );
@@ -1696,21 +1383,21 @@ const SapphireSuperApp = () => {
 
     if (step === 'details') {
       return (
-        <div className="space-y-6">
-          <div className="flex items-center gap-4">
+        <div className="space-y-4 md:space-y-6">
+          <div className="flex items-center gap-3 md:gap-4">
             <button 
               onClick={() => setStep('method')}
               className="p-2 rounded-lg hover:bg-opacity-20 hover:bg-gray-400 transition-colors"
             >
               <ArrowLeft size={24} style={{ color: colors.text }} />
             </button>
-            <h2 className="text-2xl font-bold" style={{ color: colors.text }}>
+            <h2 className="text-xl md:text-2xl font-bold" style={{ color: colors.text }}>
               {transferMethods.find(m => m.id === transferData.type)?.title}
             </h2>
           </div>
 
           <Card>
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {transferData.type === 'phone' && (
                 <Input
                   label="Номер телефона получателя"
@@ -1719,19 +1406,6 @@ const SapphireSuperApp = () => {
                   placeholder="+7 701 123 4567"
                   icon={Phone}
                   type="tel"
-                  inputRef={recipientInputRef}
-                  autoFocus={true}
-                />
-              )}
-              {transferData.type === 'card' && (
-                <Input
-                  label="Номер карты получателя"
-                  value={transferData.recipient}
-                  onChange={(val) => setTransferData({ ...transferData, recipient: val })}
-                  placeholder="0000 0000 0000 0000"
-                  icon={CreditCard}
-                  inputRef={recipientInputRef}
-                  autoFocus={true}
                 />
               )}
               
@@ -1742,7 +1416,6 @@ const SapphireSuperApp = () => {
                 placeholder="0 ₸"
                 icon={DollarSign}
                 type="number"
-                inputRef={amountInputRef}
               />
 
               <Input
@@ -1752,38 +1425,6 @@ const SapphireSuperApp = () => {
                 placeholder="За что перевод?"
                 icon={MessageSquare}
               />
-            </div>
-          </Card>
-
-          {/* Карта списания */}
-          <div>
-            <label className="text-sm font-medium mb-2 block" style={{ color: colors.text }}>Списать с карты</label>
-            <Card>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <CreditCard size={24} style={{ color: colors.primary }} />
-                  <div>
-                    <div className="font-semibold" style={{ color: colors.text }}>
-                      {mockUserData.cards[selectedCard].number}
-                    </div>
-                    <div className="text-sm" style={{ color: colors.textSecondary }}>
-                      {mockUserData.cards[selectedCard].balance.toLocaleString()} ₸
-                    </div>
-                  </div>
-                </div>
-                <ChevronRight size={20} style={{ color: colors.textSecondary }} />
-              </div>
-            </Card>
-          </div>
-
-          {/* Комиссия */}
-          <Card>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Info size={20} style={{ color: colors.info }} />
-                <span style={{ color: colors.text }}>Комиссия</span>
-              </div>
-              <span className="font-bold" style={{ color: colors.secondary }}>0 ₸</span>
             </div>
           </Card>
 
@@ -1801,37 +1442,31 @@ const SapphireSuperApp = () => {
 
     if (step === 'confirm') {
       return (
-        <div className="space-y-6">
-          <div className="text-center space-y-4">
-            <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-5xl">
+        <div className="space-y-4 md:space-y-6">
+          <div className="text-center space-y-3 md:space-y-4">
+            <div className="w-20 h-20 md:w-24 md:h-24 mx-auto rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-4xl md:text-5xl">
               ✓
             </div>
-            <h2 className="text-3xl font-bold" style={{ color: colors.text }}>Подтверждение</h2>
+            <h2 className="text-2xl md:text-3xl font-bold" style={{ color: colors.text }}>Подтверждение</h2>
             <p style={{ color: colors.textSecondary }}>Проверьте данные перевода</p>
           </div>
 
           <Card>
-            <div className="space-y-4">
-              <div className="flex justify-between py-3 border-b" style={{ borderColor: colors.border }}>
+            <div className="space-y-3 md:space-y-4">
+              <div className="flex justify-between py-2 md:py-3 border-b" style={{ borderColor: colors.border }}>
                 <span style={{ color: colors.textSecondary }}>Получатель</span>
                 <span className="font-semibold" style={{ color: colors.text }}>{transferData.recipient}</span>
               </div>
-              <div className="flex justify-between py-3 border-b" style={{ borderColor: colors.border }}>
+              <div className="flex justify-between py-2 md:py-3 border-b" style={{ borderColor: colors.border }}>
                 <span style={{ color: colors.textSecondary }}>Сумма</span>
-                <span className="font-bold text-xl" style={{ color: colors.text }}>{transferData.amount} ₸</span>
+                <span className="font-bold text-lg md:text-xl" style={{ color: colors.text }}>{transferData.amount} ₸</span>
               </div>
               {transferData.comment && (
-                <div className="flex justify-between py-3 border-b" style={{ borderColor: colors.border }}>
+                <div className="flex justify-between py-2 md:py-3 border-b" style={{ borderColor: colors.border }}>
                   <span style={{ color: colors.textSecondary }}>Комментарий</span>
                   <span className="font-semibold" style={{ color: colors.text }}>{transferData.comment}</span>
                 </div>
               )}
-              <div className="flex justify-between py-3">
-                <span style={{ color: colors.textSecondary }}>Карта списания</span>
-                <span className="font-semibold" style={{ color: colors.text }}>
-                  ••{mockUserData.cards[selectedCard].number.slice(-4)}
-                </span>
-              </div>
             </div>
           </Card>
 
@@ -1865,613 +1500,140 @@ const SapphireSuperApp = () => {
       case 'registration': return <RegistrationScreen />;
       case 'home': return <HomeScreen />;
       case 'transfer': return <TransferScreen />;
-      case 'payments': return <PaymentsScreen />;
-      case 'bank': return <BankScreen />;
-      case 'deposits': return <DepositsScreen />;
-      case 'investments': return <InvestmentsScreen />;
-      case 'analytics': return <AnalyticsScreen />;
-      case 'qr': return <QRScreen />;
-      case 'profile': return <ProfileScreen />;
       case 'marketplace': return <MarketplaceScreen />;
       case 'cart': return <CartScreen />;
       case 'ai-assistant': return <AIAssistantScreen />;
+      case 'analytics': return <AnalyticsScreen />;
       default: return <HomeScreen />;
     }
   };
 
-  // Остальные экраны (payments, bank, deposits, investments, qr, profile) остаются как в твоем коде
-  // Я их не менял, чтобы не перегружать код
-
-  const PaymentsScreen = () => {
-    const services = [
-      { icon: Smartphone, title: 'Мобильная связь', providers: ['Beeline', 'Kcell', 'Tele2', 'Altel'], color: colors.secondary },
-      { icon: Wifi, title: 'Интернет', providers: ['Kazakhtelecom', 'Beeline', 'Altel'], color: colors.accent },
-      { icon: Zap, title: 'Коммунальные услуги', providers: ['Вода', 'Электричество', 'Газ', 'Отопление'], color: colors.info },
-      { icon: FileText, title: 'Штрафы и налоги', providers: ['ГАИ', 'Налоги', 'Судебные'], color: colors.danger }
-    ];
-
-    return (
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold" style={{ color: colors.text }}>Оплата услуг</h2>
-        
-        <div className="space-y-4">
-          {services.map((service, idx) => (
-            <Card key={idx}>
-              <div className="flex items-start gap-4">
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${service.color}20` }}
-                >
-                  <service.icon size={26} style={{ color: service.color }} />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg mb-2" style={{ color: colors.text }}>{service.title}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {service.providers.map((provider, pidx) => (
-                      <button
-                        key={pidx}
-                        className="px-3 py-1 rounded-lg text-sm font-medium transition-all hover:scale-105"
-                        style={{
-                          backgroundColor: `${service.color}15`,
-                          color: service.color
-                        }}
-                      >
-                        {provider}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const BankScreen = () => {
-    const products = [
-      {
-        icon: PiggyBank,
-        title: 'Депозиты',
-        desc: 'Накопительные счета с процентами',
-        rate: 'До 16% годовых',
-        color: colors.secondary,
-        badge: 'Выгодно',
-        screen: 'deposits'
-      },
-      {
-        icon: Wallet,
-        title: 'Кредиты',
-        desc: 'Наличные на любые цели',
-        rate: 'От 12% годовых',
-        color: colors.primary,
-        screen: 'credits'
-      },
-      {
-        icon: Percent,
-        title: 'Рассрочка',
-        desc: 'Покупки без переплат',
-        rate: '0-0-12 месяцев',
-        color: colors.accent,
-        badge: 'Акция',
-        screen: 'installment'
-      },
-      {
-        icon: LineChart,
-        title: 'Инвестиции',
-        desc: 'Акции, облигации, фонды',
-        rate: 'Доход до 25%',
-        color: '#A29BFE',
-        screen: 'investments'
-      }
-    ];
-
-    return (
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold" style={{ color: colors.text }}>Банковские продукты</h2>
-        
-        <div className="space-y-4">
-          {products.map((product, idx) => (
-            <Card key={idx} onClick={() => setCurrentScreen(product.screen)}>
-              <div className="relative">
-                {product.badge && (
-                  <div
-                    className="absolute top-0 right-0 px-3 py-1 rounded-full text-xs font-bold text-white"
-                    style={{ backgroundColor: product.color }}
-                  >
-                    {product.badge}
-                  </div>
-                )}
-                <div className="flex items-start gap-4 pr-20">
-                  <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: `${product.color}20` }}
-                  >
-                    <product.icon size={30} style={{ color: product.color }} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-xl mb-1" style={{ color: colors.text }}>{product.title}</h3>
-                    <p className="text-sm mb-2" style={{ color: colors.textSecondary }}>{product.desc}</p>
-                    <div
-                      className="inline-block px-3 py-1 rounded-lg text-sm font-bold"
-                      style={{ backgroundColor: `${product.color}15`, color: product.color }}
-                    >
-                      {product.rate}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const DepositsScreen = () => {
-    const deposits = [
-      { name: 'Классический', rate: 14, term: 12, min: 100000, color: colors.primary },
-      { name: 'Премиум', rate: 16, term: 24, min: 500000, color: colors.secondary, badge: 'Выгодно' },
-      { name: 'Пенсионный', rate: 15, term: 36, min: 200000, color: colors.accent }
-    ];
-
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => setCurrentScreen('bank')}
-            className="p-2 rounded-lg hover:bg-opacity-20 hover:bg-gray-400 transition-colors"
-          >
-            <ArrowLeft size={24} style={{ color: colors.text }} />
-          </button>
-          <h2 className="text-2xl font-bold" style={{ color: colors.text }}>Депозиты</h2>
-        </div>
-
-        <Card>
-          <div className="text-center space-y-4">
-            <div className="text-6xl">🏦</div>
-            <h3 className="text-xl font-bold" style={{ color: colors.text }}>Калькулятор депозита</h3>
-            <Input
-              label="Сумма вклада"
-              value=""
-              onChange={() => {}}
-              placeholder="100 000 ₸"
-              type="number"
-            />
-            <div className="grid grid-cols-3 gap-3">
-              {['100K', '500K', '1M'].map((amount) => (
-                <button
-                  key={amount}
-                  className="py-2 rounded-xl font-semibold transition-all hover:scale-105"
-                  style={{ backgroundColor: colors.backgroundSecondary, color: colors.text }}
-                >
-                  {amount}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Card>
-
-        <div className="space-y-4">
-          {deposits.map((deposit, idx) => (
-            <Card key={idx}>
-              <div className="relative">
-                {deposit.badge && (
-                  <div
-                    className="absolute top-0 right-0 px-3 py-1 rounded-full text-xs font-bold text-white"
-                    style={{ backgroundColor: deposit.color }}
-                  >
-                    {deposit.badge}
-                  </div>
-                )}
-                <div className="space-y-3">
-                  <h3 className="font-bold text-xl" style={{ color: colors.text }}>{deposit.name}</h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <div className="text-xs mb-1" style={{ color: colors.textSecondary }}>Ставка</div>
-                      <div className="font-bold text-lg" style={{ color: deposit.color }}>{deposit.rate}%</div>
-                    </div>
-                    <div>
-                      <div className="text-xs mb-1" style={{ color: colors.textSecondary }}>Срок</div>
-                      <div className="font-bold" style={{ color: colors.text }}>{deposit.term} мес</div>
-                    </div>
-                    <div>
-                      <div className="text-xs mb-1" style={{ color: colors.textSecondary }}>Минимум</div>
-                      <div className="font-bold" style={{ color: colors.text }}>{deposit.min/1000}K ₸</div>
-                    </div>
-                  </div>
-                  <Button variant="secondary" fullWidth size="sm">
-                    Оформить
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const InvestmentsScreen = () => {
-    const portfolio = {
-      total: 1250000,
-      profit: 87500,
-      profitPercent: 7.5
-    };
-
-    const assets = [
-      { name: 'Apple Inc.', ticker: 'AAPL', amount: 350000, profit: 12.3, color: colors.success },
-      { name: 'Tesla Inc.', ticker: 'TSLA', profit: -2.8, amount: 280000, color: colors.danger },
-      { name: 'Microsoft', ticker: 'MSFT', amount: 420000, profit: 8.9, color: colors.success },
-      { name: 'ETF S&P 500', ticker: 'SPY', amount: 200000, profit: 5.2, color: colors.success }
-    ];
-
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => setCurrentScreen('bank')}
-            className="p-2 rounded-lg hover:bg-opacity-20 hover:bg-gray-400 transition-colors"
-          >
-            <ArrowLeft size={24} style={{ color: colors.text }} />
-          </button>
-          <h2 className="text-2xl font-bold" style={{ color: colors.text }}>Инвестиции</h2>
-        </div>
-
-        {/* Портфель */}
-        <div
-          className="rounded-3xl p-6 text-white"
-          style={{ background: `linear-gradient(135deg, #A29BFE 0%, #6C5CE7 100%)` }}
-        >
-          <div className="space-y-4">
-            <div>
-              <div className="text-sm opacity-80">Общая стоимость портфеля</div>
-              <div className="text-4xl font-bold">{portfolio.total.toLocaleString()} ₸</div>
-            </div>
-            <div className="flex items-center gap-6">
-              <div>
-                <div className="text-xs opacity-80">Доходность</div>
-                <div className="text-2xl font-bold text-green-300">+{portfolio.profit.toLocaleString()} ₸</div>
-              </div>
-              <div>
-                <div className="text-xs opacity-80">Процент</div>
-                <div className="text-2xl font-bold text-green-300">+{portfolio.profitPercent}%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Активы */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold" style={{ color: colors.text }}>Мои активы</h3>
-            <Button size="sm" icon={Plus}>Купить</Button>
-          </div>
-          <div className="space-y-3">
-            {assets.map((asset, idx) => (
-              <Card key={idx}>
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="font-bold text-lg" style={{ color: colors.text }}>{asset.name}</div>
-                    <div className="text-sm" style={{ color: colors.textSecondary }}>{asset.ticker}</div>
-                    <div className="text-sm font-semibold mt-1" style={{ color: colors.text }}>
-                      {asset.amount.toLocaleString()} ₸
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div
-                      className="text-xl font-bold flex items-center gap-1"
-                      style={{ color: asset.profit > 0 ? colors.success : colors.danger }}
-                    >
-                      {asset.profit > 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
-                      {asset.profit > 0 ? '+' : ''}{asset.profit}%
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Категории */}
-        <div>
-          <h3 className="text-lg font-bold mb-4" style={{ color: colors.text }}>Категории</h3>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { name: 'Акции', icon: TrendingUp, color: colors.primary },
-              { name: 'Облигации', icon: Award, color: colors.secondary },
-              { name: 'ETF фонды', icon: Target, color: colors.accent }
-            ].map((cat, idx) => (
-              <button
-                key={idx}
-                className="p-4 rounded-2xl text-center space-y-2 transition-transform hover:scale-105"
-                style={{ backgroundColor: colors.card, border: `1px solid ${colors.border}` }}
-              >
-                <cat.icon size={32} style={{ color: cat.color }} className="mx-auto" />
-                <div className="text-sm font-semibold" style={{ color: colors.text }}>{cat.name}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const QRScreen = () => {
-    return (
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold" style={{ color: colors.text }}>QR Платежи</h2>
-
-        {/* Сканер */}
-        <Card>
-          <div className="aspect-square rounded-2xl flex flex-col items-center justify-center space-y-4" style={{ backgroundColor: colors.backgroundSecondary }}>
-            <div className="relative">
-              <div className="w-48 h-48 border-4 rounded-3xl" style={{ borderColor: colors.primary, borderStyle: 'dashed' }} />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <QrCode size={80} style={{ color: colors.primary }} />
-              </div>
-            </div>
-            <Button icon={Camera}>Сканировать QR</Button>
-          </div>
-        </Card>
-
-        {/* Мой QR */}
-        <Card>
-          <div className="text-center space-y-4">
-            <h3 className="font-bold text-lg" style={{ color: colors.text }}>Мой QR для получения</h3>
-            <div className="w-48 h-48 mx-auto rounded-2xl p-4" style={{ backgroundColor: colors.background }}>
-              <div className="w-full h-full flex items-center justify-center text-8xl">
-                <QrCode size={120} style={{ color: colors.text }} />
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <Button variant="secondary" fullWidth icon={Download}>Скачать</Button>
-              <Button variant="secondary" fullWidth icon={Share2}>Поделиться</Button>
-            </div>
-          </div>
-        </Card>
-
-        {/* История QR платежей */}
-        <div>
-          <h3 className="font-bold text-lg mb-4" style={{ color: colors.text }}>История</h3>
-          <div className="space-y-3">
-            {[
-              { place: 'Магнум', amount: -8450, date: '08.12.2025 16:30' },
-              { place: 'Кофейня', amount: -1200, date: '08.12.2025 10:15' },
-              { place: 'Аптека', amount: -3600, date: '07.12.2025 19:00' }
-            ].map((item, idx) => (
-              <Card key={idx}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${colors.primary}20` }}>
-                      <QrCode size={20} style={{ color: colors.primary }} />
-                    </div>
-                    <div>
-                      <div className="font-semibold" style={{ color: colors.text }}>{item.place}</div>
-                      <div className="text-sm" style={{ color: colors.textSecondary }}>{item.date}</div>
-                    </div>
-                  </div>
-                  <div className="text-lg font-bold" style={{ color: colors.text }}>
-                    {item.amount.toLocaleString()} ₸
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const ProfileScreen = () => {
-    if (!userData) {
-      return (
-        <div className="space-y-6 text-center py-20">
-          <div className="text-6xl mb-4">👤</div>
-          <h2 className="text-2xl font-bold" style={{ color: colors.text }}>Войдите в профиль</h2>
-          <Button onClick={() => setCurrentScreen('registration')}>Войти / Регистрация</Button>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-6">
-        {/* Шапка профиля */}
-        <Card>
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-3xl font-bold text-white flex-shrink-0">
-              {userData.name[0]}
-            </div>
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold" style={{ color: colors.text }}>{userData.name}</h2>
-              <div className="text-sm" style={{ color: colors.textSecondary }}>{userData.phone}</div>
-              <div className="text-sm" style={{ color: colors.textSecondary }}>ИИН: {userData.iin}</div>
-            </div>
-            <button className="p-3 rounded-xl transition-transform hover:scale-105" style={{ backgroundColor: colors.backgroundSecondary }}>
-              <Settings size={24} style={{ color: colors.text }} />
-            </button>
-          </div>
-        </Card>
-
-        {/* Премиум статус */}
-        <Card onClick={() => setIsPremium(!isPremium)}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${isPremium ? 'bg-gradient-to-br from-yellow-500 to-orange-500' : 'bg-gradient-to-br from-gray-400 to-gray-600'}`}>
-                {isPremium ? '👑' : '⭐'}
-              </div>
-              <div>
-                <div className="font-semibold text-lg" style={{ color: colors.text }}>
-                  {isPremium ? 'Премиум аккаунт' : 'Обычный аккаунт'}
-                </div>
-                <div className="text-sm" style={{ color: colors.textSecondary }}>
-                  {isPremium ? 'AI ассистент активен' : 'Откройте премиум для AI ассистента'}
-                </div>
-              </div>
-            </div>
-            <Button size="sm" variant={isPremium ? 'secondary' : 'primary'}>
-              {isPremium ? 'Активен' : 'Активировать'}
-            </Button>
-          </div>
-        </Card>
-
-        {/* Документы */}
-        <div>
-          <h3 className="font-bold text-lg mb-4" style={{ color: colors.text }}>Мои документы</h3>
-          <div className="space-y-3">
-            {userData.documents.map((doc, idx) => (
-              <Card key={idx}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${colors.primary}20` }}>
-                      <FileText size={24} style={{ color: colors.primary }} />
-                    </div>
-                    <div>
-                      <div className="font-semibold" style={{ color: colors.text }}>
-                        {doc.type === 'passport' ? 'Паспорт РК' : 'Водительское удостоверение'}
-                      </div>
-                      <div className="text-sm" style={{ color: colors.textSecondary }}>
-                        {doc.number} • до {doc.expires}
-                      </div>
-                    </div>
-                  </div>
-                  <ChevronRight size={20} style={{ color: colors.textSecondary }} />
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Транспорт */}
-        <div>
-          <h3 className="font-bold text-lg mb-4" style={{ color: colors.text }}>Мой транспорт</h3>
-          <div className="space-y-3">
-            {userData.vehicles.map((vehicle, idx) => (
-              <Card key={idx}>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl" style={{ backgroundColor: `${colors.accent}20` }}>
-                    🚗
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold" style={{ color: colors.text }}>{vehicle.model}</div>
-                    <div className="text-sm" style={{ color: colors.textSecondary }}>
-                      {vehicle.number} • VIN: {vehicle.vin}
-                    </div>
-                  </div>
-                  <ChevronRight size={20} style={{ color: colors.textSecondary }} />
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Настройки */}
-        <div>
-          <h3 className="font-bold text-lg mb-4" style={{ color: colors.text }}>Настройки</h3>
-          <div className="space-y-3">
-            {[
-              { icon: Bell, title: 'Уведомления', subtitle: 'Push, SMS, Email' },
-              { icon: Lock, title: 'Безопасность', subtitle: 'PIN, биометрия' },
-              { icon: Globe, title: 'Язык', subtitle: 'Русский' },
-              { icon: Shield, title: 'Конфиденциальность', subtitle: 'Данные и доступ' }
-            ].map((setting, idx) => (
-              <Card key={idx}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${colors.primary}20` }}>
-                      <setting.icon size={22} style={{ color: colors.primary }} />
-                    </div>
-                    <div>
-                      <div className="font-semibold" style={{ color: colors.text }}>{setting.title}</div>
-                      <div className="text-sm" style={{ color: colors.textSecondary }}>{setting.subtitle}</div>
-                    </div>
-                  </div>
-                  <ChevronRight size={20} style={{ color: colors.textSecondary }} />
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Выход */}
-        <Button variant="danger" fullWidth onClick={() => {
-          setUserData(null);
-          setCurrentScreen('onboarding');
-          showNotification('Вы вышли из аккаунта');
-        }}>
-          Выйти из аккаунта
-        </Button>
-      </div>
-    );
-  };
-
   const showHeader = !['splash', 'onboarding', 'registration'].includes(currentScreen);
-  const showNav = ['home', 'payments', 'qr', 'bank', 'profile', 'marketplace', 'cart', 'analytics', 'ai-assistant'].includes(currentScreen);
+  const showNav = ['home', 'marketplace', 'cart', 'analytics', 'ai-assistant', 'transfer'].includes(currentScreen) && isMobile;
+  const showDesktopSidebar = showHeader && !isMobile && !['splash', 'onboarding', 'registration'].includes(currentScreen);
 
   return (
     <div className="min-h-screen relative" style={{ backgroundColor: colors.background }}>
-      {/* Header */}
-      {showHeader && (
-        <div
-          className="sticky top-0 z-50 backdrop-blur-xl border-b"
-          style={{
-            backgroundColor: `${colors.card}95`,
-            borderColor: colors.border
-          }}
-        >
-          <div className="flex items-center justify-between p-4">
-            {currentScreen !== 'home' && (
-              <button 
-                onClick={() => {
-                  if (['transfer', 'payments', 'bank', 'deposits', 'analytics', 'qr', 'investments', 'marketplace', 'cart', 'ai-assistant'].includes(currentScreen)) {
-                    setCurrentScreen('home');
-                  } else {
-                    window.history.back();
-                  }
-                }}
-                className="p-2 rounded-lg hover:bg-opacity-20 hover:bg-gray-400 transition-colors"
-              >
-                <ArrowLeft size={24} style={{ color: colors.text }} />
-              </button>
-            )}
-            <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-lg"
-                style={{ background: `linear-gradient(135deg, ${colors.primary}, #A29BFE)` }}
-              >
-                S
+      {/* Desktop Sidebar */}
+      {showDesktopSidebar && <DesktopSidebar />}
+
+      {/* Main Content */}
+      <div className={`transition-all duration-300 ${showDesktopSidebar ? 'md:ml-64 lg:ml-72' : ''} ${showNav ? 'pb-20' : ''} ${showHeader ? 'p-4 md:p-6' : ''}`}>
+        {/* Mobile Header */}
+        {showHeader && isMobile && (
+          <div
+            className="sticky top-0 z-50 backdrop-blur-xl border-b mb-4"
+            style={{
+              backgroundColor: `${colors.card}95`,
+              borderColor: colors.border
+            }}
+          >
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    if (['transfer', 'marketplace', 'cart', 'analytics', 'ai-assistant'].includes(currentScreen)) {
+                      setCurrentScreen('home');
+                    }
+                  }}
+                  className="p-2 rounded-lg hover:bg-opacity-20 hover:bg-gray-400 transition-colors"
+                >
+                  <ArrowLeft size={20} style={{ color: colors.text }} />
+                </button>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white text-sm"
+                    style={{ background: `linear-gradient(135deg, ${colors.primary}, #A29BFE)` }}
+                  >
+                    S
+                  </div>
+                  <div className="font-bold" style={{ color: colors.text }}>
+                    {currentScreen === 'home' ? 'Sapphire' : 
+                     currentScreen === 'marketplace' ? 'Магазин' :
+                     currentScreen === 'cart' ? 'Корзина' :
+                     currentScreen === 'analytics' ? 'Аналитика' :
+                     currentScreen === 'ai-assistant' ? 'AI Ассистент' :
+                     currentScreen === 'transfer' ? 'Переводы' : 'Sapphire'}
+                  </div>
+                </div>
               </div>
-              <div>
-                <div className="text-lg font-bold" style={{ color: colors.text }}>Sapphire SuperApp</div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: `${colors.primary}20` }}
+                >
+                  {theme === 'light' ? '🌙' : '☀️'}
+                </button>
+                <button
+                  className="w-8 h-8 rounded-full flex items-center justify-center relative"
+                  style={{ backgroundColor: `${colors.primary}20` }}
+                >
+                  <Bell size={18} style={{ color: colors.primary }} />
+                  <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+                </button>
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-                className="w-10 h-10 rounded-full flex items-center justify-center transition hover:scale-110"
-                style={{ backgroundColor: `${colors.primary}20` }}
-              >
-                {theme === 'light' ? '🌙' : '☀️'}
-              </button>
-              <button
-                className="w-10 h-10 rounded-full flex items-center justify-center transition hover:scale-110 relative"
-                style={{ backgroundColor: `${colors.primary}20` }}
-              >
-                <Bell size={20} style={{ color: colors.primary }} />
-                <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></div>
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Content */}
-      <div className={`${showNav ? 'pb-24' : ''} ${showHeader ? 'p-4' : ''}`}>
-        {renderScreen()}
+        {/* Desktop Header */}
+        {showHeader && !isMobile && (
+          <div
+            className="sticky top-0 z-40 backdrop-blur-xl border-b mb-6"
+            style={{
+              backgroundColor: `${colors.card}95`,
+              borderColor: colors.border
+            }}
+          >
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="p-2 rounded-lg hover:bg-opacity-20 hover:bg-gray-400 transition-colors"
+                >
+                  <Menu size={24} style={{ color: colors.text }} />
+                </button>
+                <h1 className="text-2xl font-bold" style={{ color: colors.text }}>
+                  {currentScreen === 'home' ? 'Главная' : 
+                   currentScreen === 'marketplace' ? 'Магазин' :
+                   currentScreen === 'cart' ? 'Корзина' :
+                   currentScreen === 'analytics' ? 'Аналитика расходов' :
+                   currentScreen === 'ai-assistant' ? 'AI Ассистент' :
+                   currentScreen === 'transfer' ? 'Переводы' : 'Sapphire SuperApp'}
+                </h1>
+              </div>
+              <div className="flex items-center gap-4">
+                {userData && (
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <div className="font-semibold text-sm" style={{ color: colors.text }}>{userData.name}</div>
+                      <div className="text-xs" style={{ color: colors.textSecondary }}>Баланс: {showBalance ? `${mockUserData.cards.reduce((sum, card) => sum + card.balance, 0).toLocaleString()} ₸` : '••• •••'}</div>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-sm font-bold text-white">
+                      {userData.name[0]}
+                    </div>
+                  </div>
+                )}
+                <button
+                  onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition hover:scale-110"
+                  style={{ backgroundColor: `${colors.primary}20` }}
+                >
+                  {theme === 'light' ? '🌙' : '☀️'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Content */}
+        <div className={`${!showHeader && !isMobile ? 'pt-6' : ''}`}>
+          {renderScreen()}
+        </div>
       </div>
 
-      {/* Bottom Navigation */}
+      {/* Mobile Bottom Navigation */}
       {showNav && (
         <div
           className="fixed bottom-0 left-0 right-0 border-t backdrop-blur-xl z-50"
@@ -2484,9 +1646,9 @@ const SapphireSuperApp = () => {
             {[
               { id: 'home', icon: Home, label: 'Главная' },
               { id: 'marketplace', icon: ShoppingBag, label: 'Магазин' },
-              { id: 'qr', icon: QrCode, label: 'QR' },
+              { id: 'transfer', icon: ArrowUpRight, label: 'Переводы' },
               { id: 'analytics', icon: LineChart, label: 'Аналитика' },
-              { id: 'profile', icon: User, label: 'Профиль' }
+              { id: 'ai-assistant', icon: Cpu, label: 'AI' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -2498,7 +1660,7 @@ const SapphireSuperApp = () => {
                 }}
               >
                 <tab.icon
-                  size={24}
+                  size={22}
                   strokeWidth={currentScreen === tab.id ? 2.5 : 2}
                 />
                 <span className="text-xs font-medium">{tab.label}</span>
@@ -2511,7 +1673,7 @@ const SapphireSuperApp = () => {
       {/* Notification */}
       {notification && (
         <div
-          className="fixed top-20 left-4 right-4 p-4 rounded-2xl shadow-2xl z-50 flex items-center gap-3 animate-[slideDown_0.3s_ease]"
+          className="fixed top-4 md:top-6 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:max-w-md p-4 rounded-2xl shadow-2xl z-50 flex items-center gap-3 animate-[slideDown_0.3s_ease]"
           style={{
             backgroundColor: colors.card,
             border: `2px solid ${notification.type === 'success' ? colors.success : notification.type === 'error' ? colors.danger : colors.info}`
@@ -2520,7 +1682,7 @@ const SapphireSuperApp = () => {
           {notification.type === 'success' && <CheckCircle size={24} style={{ color: colors.success }} />}
           {notification.type === 'error' && <AlertCircle size={24} style={{ color: colors.danger }} />}
           {notification.type === 'info' && <Info size={24} style={{ color: colors.info }} />}
-          <span className="flex-1 font-medium" style={{ color: colors.text }}>{notification.message}</span>
+          <span className="flex-1 font-medium text-sm md:text-base" style={{ color: colors.text }}>{notification.message}</span>
           <button onClick={() => setNotification(null)}>
             <X size={20} style={{ color: colors.textSecondary }} />
           </button>
@@ -2544,6 +1706,19 @@ const SapphireSuperApp = () => {
             transform: translateY(0);
             opacity: 1;
           }
+        }
+        
+        /* Адаптивные стили */
+        @media (max-width: 640px) {
+          .text-xs-sm { font-size: 0.7rem; }
+        }
+        
+        @media (min-width: 768px) {
+          .text-md-lg { font-size: 1.125rem; }
+        }
+        
+        @media (min-width: 1024px) {
+          .text-lg-xl { font-size: 1.25rem; }
         }
       `}</style>
     </div>
